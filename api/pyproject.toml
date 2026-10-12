@@ -1,0 +1,29 @@
+[project]
+name = "dreamlog"
+version = "0.1.0"
+description = "Dictate a dream on waking, get an illustration of it, and see which symbols keep coming back."
+requires-python = ">=3.12"
+license = { text = "MIT" }
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+markers = [
+    "model: needs the real speech or embedding model (downloaded on first use)",
+    "db: needs Postgres with pgvector",
+]
+filterwarnings = ["ignore::DeprecationWarning", "ignore::FutureWarning"]
+
+[tool.ruff]
+line-length = 150
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM"]
+ignore = ["E501", "SIM905", "SIM108", "B007"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+ignore_missing_imports = true
+files = ["dreamlog"]

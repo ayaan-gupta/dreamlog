@@ -1,0 +1,17 @@
+.venv
+.cache
+data
+node_modules
+.next
+out
+__pycache__
+*.pyc
+.pytest_cache
+.mypy_cache
+.ruff_cache
+.env
+.env.local
+*.tsbuildinfo
+next-env.d.ts
+.DS_Store
+.claude
