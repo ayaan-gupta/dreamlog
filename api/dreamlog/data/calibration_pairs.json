@@ -1,0 +1,33 @@
+{
+  "note": "Hand-labelled symbol pairs used only to choose the canonicalisation threshold. merge = a dream journal should count these as one recurring symbol. distinct = it should not. The pair water/ocean is deliberately absent: it is the held-out acceptance test.",
+  "merge": [
+    ["sea", "ocean"], ["house", "home"], ["forest", "woods"], ["car", "automobile"],
+    ["stairs", "staircase"], ["child", "kid"], ["dog", "puppy"], ["cat", "kitten"],
+    ["mother", "mom"], ["father", "dad"], ["snake", "serpent"], ["boat", "ship"],
+    ["baby", "infant"], ["lake", "pond"], ["river", "stream"], ["road", "street"],
+    ["corridor", "hallway"], ["teacher", "schoolteacher"], ["doctor", "physician"],
+    ["rock", "stone"], ["shop", "store"], ["phone", "telephone"], ["plane", "airplane"],
+    ["film", "movie"], ["sofa", "couch"], ["bag", "backpack"], ["rain", "rainstorm"],
+    ["cliff", "precipice"], ["woman", "lady"], ["cellar", "basement"],
+    ["lift", "elevator"], ["grave", "tomb"], ["path", "trail"], ["mountain", "mountains"],
+    ["bird", "birds"], ["tooth", "teeth"], ["storm", "thunderstorm"], ["garden", "backyard"],
+    ["stranger", "unknown person"], ["wave", "waves"]
+  ],
+  "distinct": [
+    ["dog", "cat"], ["mother", "father"], ["door", "window"], ["sun", "moon"],
+    ["car", "train"], ["teacher", "doctor"], ["fire", "water"], ["house", "school"],
+    ["tree", "flower"], ["bird", "fish"], ["key", "door"], ["stairs", "door"],
+    ["mirror", "window"], ["brother", "sister"], ["cat", "bird"], ["horse", "dog"],
+    ["forest", "mountain"], ["river", "bridge"], ["boat", "train"], ["snake", "spider"],
+    ["tooth", "hand"], ["bed", "chair"], ["kitchen", "bedroom"], ["church", "hospital"],
+    ["clock", "phone"], ["book", "letter"], ["road", "bridge"], ["rain", "snow"],
+    ["city", "village"], ["baby", "grandmother"], ["wolf", "bear"], ["field", "forest"],
+    ["tower", "house"], ["garden", "kitchen"], ["star", "moon"], ["sky", "ground"],
+    ["door", "ocean"], ["stairs", "fish"], ["moon", "teacher"], ["key", "wolf"],
+    ["train", "tooth"], ["mirror", "mountain"], ["bird", "school"], ["clock", "river"],
+    ["mother", "forest"], ["car", "moon"], ["snake", "kitchen"], ["book", "rain"],
+    ["bridge", "tooth"], ["stranger", "tree"], ["house", "sea"], ["dog", "stairs"],
+    ["elevator", "stairs"], ["airport", "train station"], ["friend", "stranger"],
+    ["shoe", "hat"], ["knife", "key"], ["candle", "lamp"], ["bus", "car"], ["cave", "tunnel"]
+  ]
+}

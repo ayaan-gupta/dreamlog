@@ -1,9 +1,9 @@
 .venv
 .cache
-data
+/data
 node_modules
 .next
-out
+/web/out
 __pycache__
 *.pyc
 .pytest_cache
