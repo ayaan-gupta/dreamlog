@@ -14,7 +14,7 @@ from dataclasses import dataclass
 from .geometry import Affine, band, blob, circle_path
 from .glyphs import GLYPHS
 from .palette import palette_for
-from .procedural import MARGIN, H, W, _defs, _lantern, _splatter, paint_glyph, seed_from
+from .procedural import MARGIN, H, W, _defs, _splatter, paint_glyph, seed_from
 
 SLOTS: tuple[tuple[float, float], ...] = ((0.31, 0.22), (0.70, 0.30), (0.33, 0.52), (0.71, 0.61), (0.29, 0.81), (0.67, 0.86))
 
@@ -77,11 +77,19 @@ def render_atlas(spec: AtlasSpec) -> str:
             for gap, width in ((16, 2.0), (30, 1.4))
         )
         parts.append(f'<g filter="url(#soft)" opacity="0.6">{rings}</g>')
+        # Land is paper left unpainted, with the sea pooling darker along its shore.
         island = blob(own, cx, cy, r, r * 0.86, points=9, wobble=0.16)
-        parts.append(f'<g filter="url(#wash)" style="mix-blend-mode:multiply" opacity="0.8"><path d="{island}" fill="{pal.ground}"/></g>')
+        parts.append(
+            f'<g filter="url(#wash)" style="mix-blend-mode:multiply" opacity="0.55">'
+            f'<path d="{island}" fill="none" stroke="{pal.ground}" stroke-width="9"/></g>'
+        )
+        parts.append(f'<g filter="url(#soft)" opacity="0.9"><path d="{island}" fill="{pal.paper}"/></g>')
         glyph = GLYPHS.get(symbol.glyph or "")
         if glyph is None:
-            parts.append(_lantern(symbol.name, cx, cy, pal))
+            # No glyph: a dark pebble whose shape is fixed by the name. A light
+            # would vanish against the paper island.
+            pebble = blob(random.Random(seed_from("pebble:" + symbol.name)), cx, cy, r * 0.3, r * 0.24, points=7, wobble=0.22)
+            parts.append(f'<g filter="url(#ink)" style="mix-blend-mode:multiply" opacity="0.8"><path d="{pebble}" fill="{pal.mid}"/></g>')
         else:
             size = r * 1.12
             parts.append(paint_glyph(glyph, Affine.place(cx, cy + size * 0.5, size), pal))

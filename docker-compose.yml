@@ -1,0 +1,27 @@
+# The database only. `make dev` starts the same container with plain `docker run`,
+# so this file is optional: it is here for people who prefer `docker compose up -d db`.
+#
+# NOT TESTED where this was written: that machine runs Docker through colima
+# without the compose plugin. The API and web are run on the host, not in
+# containers, because that is the path that was tested.
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    container_name: dreamlog-db
+    environment:
+      POSTGRES_USER: dreamlog
+      POSTGRES_PASSWORD: dreamlog
+      POSTGRES_DB: dreamlog
+    ports:
+      - "127.0.0.1:${DB_PORT:-5504}:5432"
+    volumes:
+      - dreamlog-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dreamlog"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+volumes:
+  dreamlog-pgdata:
+    name: dreamlog-pgdata

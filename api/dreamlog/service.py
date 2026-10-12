@@ -116,6 +116,17 @@ def title_of(text: str, limit: int = 64) -> str:
     return cut.rstrip(",;:") + "…"
 
 
+def month_mood(moods_newest_first: list[list[str]]) -> str:
+    """The month's commonest mood. An entry's first mood counts 1 and its
+    second 0.5. A tie goes to the mood of the more recent dream."""
+    score: dict[str, float] = {}
+    for moods in moods_newest_first:
+        for weight, mood in zip((1.0, 0.5), moods, strict=False):
+            score[mood] = score.get(mood, 0.0) + weight
+    order = [m for moods in moods_newest_first for m in moods]
+    return max(score, key=lambda m: (score[m], -order.index(m))) if score else "neutral"
+
+
 def clean_query(query: str) -> str:
     """ "dreams about the sea" becomes "sea". Every entry is a dream, so the
     lead-in only adds noise to the embedding."""
@@ -527,13 +538,10 @@ class Dreamlog:
                 """,
                 (month,),
             ).fetchall()
-            mood = conn.execute(
-                """
-                SELECT m AS mood, count(*) AS n FROM entries e, unnest(e.mood[1:1]) AS m
-                WHERE to_char(e.created_at AT TIME ZONE 'UTC', 'YYYY-MM') = %s GROUP BY m ORDER BY n DESC, m LIMIT 1
-                """,
+            moods = conn.execute(
+                "SELECT mood FROM entries WHERE to_char(created_at AT TIME ZONE 'UTC', 'YYYY-MM') = %s ORDER BY created_at DESC, id",
                 (month,),
-            ).fetchone()
+            ).fetchall()
             if not rows:
                 raise NotFound(month)
             ids = {r["canonical"]: int(r["id"]) for r in rows}
@@ -551,7 +559,7 @@ class Dreamlog:
             ).fetchall()
         spec = AtlasSpec(
             month=month,
-            mood=mood["mood"] if mood else "neutral",
+            mood=month_mood([list(r["mood"]) for r in moods]),
             symbols=[AtlasGlyph(name, glyph, strength) for name, glyph, strength, _n in top],
             routes=sorted((min(index[p["a"]], index[p["b"]]), max(index[p["a"]], index[p["b"]])) for p in pairs),
         )

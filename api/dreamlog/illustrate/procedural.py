@@ -257,18 +257,6 @@ def _splatter(rng: random.Random, pal: Palette) -> str:
     return f'<g style="mix-blend-mode:multiply" opacity="0.42">{"".join(dots)}</g>'
 
 
-def _slots(rng: random.Random, hero_x: float | None, n: int) -> list[float]:
-    """Horizontal positions for the supporting cast, kept clear of the hero."""
-    candidates = [0.16, 0.3, 0.5, 0.7, 0.84]
-    if hero_x is not None:
-        candidates = [c for c in candidates if abs(c * W - hero_x) > 150]
-    rng.shuffle(candidates)
-    xs = [c * W + rng.uniform(-22, 22) for c in candidates]
-    while len(xs) < n:
-        xs.append(rng.uniform(0.14, 0.86) * W)
-    return xs[:n]
-
-
 def render_scene(spec: SceneSpec) -> str:
     """Returns a self-contained SVG document, 800 by 1000."""
     rng = random.Random(spec.seed)
@@ -389,21 +377,23 @@ def render_scene(spec: SceneSpec) -> str:
         parts.append(_dots(rng, rng.randint(70, 100), MARGIN + 20, H - MARGIN - 20, 1.4, 4.4, pal, 0.8))
 
     # The cast. One hero, painted far too large; the rest ordinary or tiny.
-    supporting = [c for c in cast if hero is None or c[0] is not hero[0]][:4]
-    xs = _slots(rng, hero_x, len(supporting))
     painted: list[tuple[float, str]] = []
-    for i, (sym, glyph) in enumerate(supporting):
-        shrink = 0.5 if i == len(supporting) - 1 and len(supporting) > 1 else rng.uniform(0.7, 1.05)
-        size = glyph.size * shrink
-        if glyph.zone == "float":
-            base = rng.uniform(0.3, 0.52) * H + size / 2
-            m = Affine.place(xs[i], base, size, rotate=rng.uniform(-24, 24), flip=rng.random() < 0.5)
-        else:
-            base = ground_top + rng.uniform(4, 30) + (0 if water else i * 6)
-            m = Affine.place(xs[i], base, size, flip=rng.random() < 0.5)
-            if water:
-                painted.append((base - 1, paint_glyph(glyph, Affine.place(xs[i], base, size, squash=-0.7), pal, reflection=True)))
-        painted.append((base, paint_glyph(glyph, m, pal)))
+    occupied: list[tuple[float, float]] = []
+
+    def claim(width: float) -> float:
+        """An x for something this wide, overlapping what already stands there as little as possible."""
+        half = width / 2
+        low, high = MARGIN + 34 + half, W - MARGIN - 34 - half
+        options = [low + (high - low) * k / 11 for k in range(12)] if high > low else [W / 2]
+        rng.shuffle(options)
+
+        def overlap(x: float) -> float:
+            return sum(max(0.0, min(x + half, b) - max(x - half, a)) for a, b in occupied)
+
+        best = min(options, key=overlap)
+        occupied.append((best - half - 16, best + half + 16))
+        return best
+
     if hero is not None and hero_x is not None:
         sym, glyph = hero
         size = min(max(glyph.size * rng.uniform(2.1, 2.9), 250), 0.56 * H)
@@ -422,14 +412,28 @@ def render_scene(spec: SceneSpec) -> str:
             m = Affine.place(hx, base, size, flip=rng.random() < 0.5)
             if water:
                 painted.append((base - 1, paint_glyph(glyph, Affine.place(hx, base, size, squash=-0.7), pal, reflection=True)))
+        occupied.append((hx - size * 0.4, hx + size * 0.4))
+        painted.append((base, paint_glyph(glyph, m, pal)))
+
+    supporting = [c for c in cast if hero is None or c[0] is not hero[0]][:4]
+    for i, (sym, glyph) in enumerate(supporting):
+        shrink = 0.5 if i == len(supporting) - 1 and len(supporting) > 1 else rng.uniform(0.7, 1.05)
+        size = glyph.size * shrink
+        x = claim(size * 0.8)
+        if glyph.zone == "float":
+            base = rng.uniform(0.3, 0.52) * H + size / 2
+            m = Affine.place(x, base, size, rotate=rng.uniform(-24, 24), flip=rng.random() < 0.5)
+        else:
+            base = ground_top + rng.uniform(4, 30) + (0 if water else i * 6)
+            m = Affine.place(x, base, size, flip=rng.random() < 0.5)
+            if water:
+                painted.append((base - 1, paint_glyph(glyph, Affine.place(x, base, size, squash=-0.7), pal, reflection=True)))
         painted.append((base, paint_glyph(glyph, m, pal)))
 
     # People are never drawn. A person in the dream becomes a standing shape.
-    presences = of_zone("presence")[:3]
-    for i, (sym, glyph) in enumerate(presences):
-        anchor = (hero_x if hero_x is not None else W / 2) + rng.choice([-1, 1]) * rng.uniform(110, 190) + i * rng.uniform(40, 70)
-        px = min(max(anchor, MARGIN + 60), W - MARGIN - 60)
+    for sym, glyph in of_zone("presence")[:3]:
         size = glyph.size * rng.uniform(0.7, 1.25)
+        px = claim(size * 0.42)
         base = ground_top + rng.uniform(10, 46)
         painted.append((base, paint_glyph(glyph, Affine.place(px, base, size), pal, opacity=0.62)))
 

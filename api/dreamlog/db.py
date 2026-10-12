@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import time
 from collections.abc import Iterator
 from contextlib import contextmanager
 from pathlib import Path
@@ -63,12 +64,24 @@ class Database:
         self.pool.close()
 
 
-def ensure_database(url: str) -> None:
-    """Creates the database named in the URL if the server does not have it."""
+def ensure_database(url: str, wait_s: float = 30.0) -> None:
+    """Creates the database named in the URL if the server does not have it.
+
+    Waits for the server first: a container that says it is ready may not be
+    reachable through its published port for another second or two.
+    """
     info = psycopg.conninfo.conninfo_to_dict(url)
     name = str(info["dbname"])
     admin = psycopg.conninfo.make_conninfo(url, dbname="postgres")
-    with psycopg.connect(admin, autocommit=True) as conn:
-        exists = conn.execute("SELECT 1 FROM pg_database WHERE datname = %s", (name,)).fetchone()
-        if not exists:
-            conn.execute(psycopg.sql.SQL("CREATE DATABASE {}").format(psycopg.sql.Identifier(name)))
+    deadline = time.monotonic() + wait_s
+    while True:
+        try:
+            with psycopg.connect(admin, autocommit=True, connect_timeout=3) as conn:
+                exists = conn.execute("SELECT 1 FROM pg_database WHERE datname = %s", (name,)).fetchone()
+                if not exists:
+                    conn.execute(psycopg.sql.SQL("CREATE DATABASE {}").format(psycopg.sql.Identifier(name)))
+            return
+        except psycopg.OperationalError:
+            if time.monotonic() > deadline:
+                raise
+            time.sleep(0.5)

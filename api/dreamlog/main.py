@@ -15,6 +15,7 @@ from fastapi.responses import JSONResponse
 
 from .audio import AudioDecodeError
 from .config import Settings, get_settings
+from .db import ensure_database
 from .illustrate.palette import mood_colours
 from .models import AtlasOut, DeletedOut, EntryOut, GraphOut, MonthOut, PrivacyOut, SearchOut, SeedStatus, TextIn
 from .service import Dreamlog, NotFound, build_services
@@ -38,6 +39,7 @@ def create_app(settings: Settings | None = None, *, warm: bool = True) -> FastAP
 
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+        ensure_database(settings.database_url)
         core = Dreamlog(build_services(settings))
         app.state.core = core
         app.state.ready = not warm
