@@ -5,9 +5,9 @@
   "license": "MIT",
   "description": "The Dreamlog client: record, timeline, patterns, atlas, search.",
   "scripts": {
-    "dev": "next dev -p ${WEB_PORT:-4104}",
+    "dev": "next dev -H ${WEB_HOST:-127.0.0.1} -p ${WEB_PORT:-4104}",
     "build": "next build",
-    "start": "next start -p ${WEB_PORT:-4104}",
+    "start": "next start -H ${WEB_HOST:-127.0.0.1} -p ${WEB_PORT:-4104}",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "demo": "tsx scripts/record-demo.ts",

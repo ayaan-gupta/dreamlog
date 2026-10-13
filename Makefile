@@ -11,6 +11,7 @@ export DREAMLOG_DATABASE_URL ?= postgresql://dreamlog:dreamlog@127.0.0.1:$(DB_PO
 export DREAMLOG_TEST_DATABASE_URL ?= postgresql://dreamlog:dreamlog@127.0.0.1:$(DB_PORT)/dreamlog_test
 export API_PORT
 export WEB_PORT
+export WEB_HOST ?= 127.0.0.1
 
 .PHONY: dev install db api web warm seed test test-fast lint art demo shots stop clean help
 
